@@ -1,16 +1,27 @@
 
 terraform {
-  required_version = ">= 0.13"
+  required_version = ">= 1.3.7, < 2.0.0"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 2.7"
+    }
+  }
+
 }
 
 provider "aws" {
-  region = "us-east-2"
+  region = "us-east-1"
+
+  # Allow any 2.x version of the AWS provider
+  #version = "~> 2.7"
 }
 
-resource "aws_instance" "example" {
+resource "aws_instance" "MyEc2" {
   ami           = "ami-0c55b159cbfafe1f0"
   instance_type = "t2.micro"
-  vpc_security_group_ids = [aws_security_group.instance.id]
+  vpc_security_group_ids = [aws_security_group.SecGroupe.id]
   
   user_data = <<-EOF
               #!/bin/bash
@@ -19,14 +30,14 @@ resource "aws_instance" "example" {
               EOF
   
   tags = {
-    Name = "terraform-example"
+    Name = "MyEc2"
   }
   
 }
 
-resource "aws_security_group" "instance" {
+resource "aws_security_group" "SecGroupe" {
 
-  name = var.security_group_name
+  #name = var.security_group_name
 
   ingress {
     from_port   = var.server_port
@@ -37,19 +48,18 @@ resource "aws_security_group" "instance" {
 }
 
 variable "server_port" {
-  description = "The port the server will use for HTTP
-requests"
+  description = "The port the server will use for HTTP requests"
   type = number
   default = 8080
 }
 
-variable "security_group_name" {
-  description = "The name of the security group"
-  type        = string
-  default     = "terraform-example-instance"
-}
+#variable "security_group_name" {
+#  description = "The name of the security group"
+#  type        = string
+#  default     = "terraform-example-instance"
+#}
 
 output "public_ip" {
-  value       = aws_instance.example.public_ip
+  value       = aws_instance.MyEc2.public_ip
   description = "The public IP of the Instance"
 }
